@@ -14,3 +14,14 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Route::get('create', 'CrudsController@create', function () {
+//     return view('create');
+// });
+
+Route::resource('crud','CrudsController');
+
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
