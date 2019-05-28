@@ -23,5 +23,4 @@ Route::resource('crud','CrudsController');
 
 
 Auth::routes();
-
 Route::get('/home', 'HomeController@index')->name('home');

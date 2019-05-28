@@ -4,9 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Crud;
 use Illuminate\Http\Request;
+use File;
+use Storage;
+use App\Traits\UploadTrait;
+use Illuminate\Http\UploadedFile;
+
 
 class CrudsController extends Controller
 {
+
+    public function uploadOne(UploadedFile $uploadedFile, $folder = null, $disk = 'public', $filename = null)
+    {
+        $name = !is_null($filename) ? $filename : str_random(25);
+
+        $file = $uploadedFile->storeAs($folder, $name.'.'.$uploadedFile->getClientOriginalExtension(), $disk);
+
+        return $file;
+    }
+
+
     /**
      * Display a listing of the resource.
      *
@@ -51,6 +67,17 @@ class CrudsController extends Controller
             'last_name'        =>   $request->last_name,
             'image'            =>   $new_name
         );
+
+
+        // Make a image name based on user name and current timestamp
+        // $name = str_slug($request->input('first_name')).'_'.time();
+        // Define folder path
+        # $folder = '/images/';
+        // Make a file path where image will be stored [ folder path + file name + file extension]
+        // $filePath = $folder . $name. '.' . $image->getClientOriginalExtension();
+        // Upload image
+        // $this->uploadOne($image, $folder, 'public', $name);
+
 
         Crud::create($form_data);
 
@@ -131,6 +158,9 @@ class CrudsController extends Controller
     public function destroy($id)
     {
         $data = Crud::findOrFail($id);
+        // var_dump($data['image']);exit;
+        File::delete('images/' .$data['image']);
+
         $data->delete();
 
         return redirect('crud')->with('success', 'Data is successfully deleted');
