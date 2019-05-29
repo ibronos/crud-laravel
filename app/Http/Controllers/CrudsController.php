@@ -61,23 +61,15 @@ class CrudsController extends Controller
         $image = $request->file('image');
 
         $new_name = rand() . '.' . $image->getClientOriginalExtension();
+
+        Storage::disk('public')->putFileAs('images', $image, $new_name);
+
         $image->move(public_path('images'), $new_name);
         $form_data = array(
             'first_name'       =>   $request->first_name,
             'last_name'        =>   $request->last_name,
             'image'            =>   $new_name
         );
-
-
-        // Make a image name based on user name and current timestamp
-        // $name = str_slug($request->input('first_name')).'_'.time();
-        // Define folder path
-        # $folder = '/images/';
-        // Make a file path where image will be stored [ folder path + file name + file extension]
-        // $filePath = $folder . $name. '.' . $image->getClientOriginalExtension();
-        // Upload image
-        // $this->uploadOne($image, $folder, 'public', $name);
-
 
         Crud::create($form_data);
 
@@ -127,8 +119,15 @@ class CrudsController extends Controller
                 'image'         =>  'image|max:2048'
             ]);
 
+            //delete old file on public and storage
+            Storage::disk('public')->delete('images/'. $request->hidden_image); //storage
+            File::delete('images/' .$request->hidden_image); //public
+
             $image_name = rand() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('images'), $image_name);
+
+            //save new file on public and storage
+            Storage::disk('public')->putFileAs('images', $image, $image_name);//storage
+            $image->move(public_path('images'), $image_name);//public
         }
         else
         {
@@ -158,8 +157,10 @@ class CrudsController extends Controller
     public function destroy($id)
     {
         $data = Crud::findOrFail($id);
-        // var_dump($data['image']);exit;
-        File::delete('images/' .$data['image']);
+
+        //delete file
+        File::delete('images/' .$data['image']); //public
+        Storage::disk('public')->delete('images/'. $data['image']);//storage
 
         $data->delete();
 
